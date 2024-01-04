@@ -31,13 +31,13 @@ class User
     private ?string $mail = null;
 
     #[ORM\Column]
-    private ?int $phone = null;
+    private ?string $phone = null;
 
     #[ORM\Column(length: 255)]
     private ?string $address = null;
 
     #[ORM\Column]
-    private ?int $postalCode = null;
+    private ?string $postalCode = null;
 
     #[ORM\Column(length: 255)]
     private ?string $city = null;
@@ -70,7 +70,7 @@ class User
     private Collection $boats;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: FishingNotebook::class)]
-    private Collection $fishingNotebook;
+    private Collection $fishingNotebooks;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Outlet::class)]
     private Collection $outlets;
@@ -81,7 +81,7 @@ class User
     public function __construct()
     {
         $this->boats = new ArrayCollection();
-        $this->fishingNotebook = new ArrayCollection();
+        $this->fishingNotebooks = new ArrayCollection();
         $this->outlets = new ArrayCollection();
         $this->bookings = new ArrayCollection();
     }
@@ -139,12 +139,12 @@ class User
         return $this;
     }
 
-    public function getPhone(): ?int
+    public function getPhone(): ?string
     {
         return $this->phone;
     }
 
-    public function setPhone(int $phone): static
+    public function setPhone(string $phone): static
     {
         $this->phone = $phone;
 
@@ -163,12 +163,12 @@ class User
         return $this;
     }
 
-    public function getPostalCode(): ?int
+    public function getPostalCode(): ?string
     {
         return $this->postalCode;
     }
 
-    public function setPostalCode(int $postalCode): static
+    public function setPostalCode(string $postalCode): static
     {
         $this->postalCode = $postalCode;
 
@@ -316,15 +316,15 @@ class User
     /**
      * @return Collection<int, FishingNotebook>
      */
-    public function getFishingNotebook(): Collection
+    public function getFishingNotebooks(): Collection
     {
-        return $this->fishingNotebook;
+        return $this->fishingNotebooks;
     }
 
     public function addFishingNotebook(FishingNotebook $fishingNotebook): static
     {
-        if (!$this->fishingNotebook->contains($fishingNotebook)) {
-            $this->fishingNotebook->add($fishingNotebook);
+        if (!$this->fishingNotebooks->contains($fishingNotebook)) {
+            $this->fishingNotebooks->add($fishingNotebook);
             $fishingNotebook->setUser($this);
         }
 
@@ -333,7 +333,7 @@ class User
 
     public function removeFishingNotebook(FishingNotebook $fishingNotebook): static
     {
-        if ($this->fishingNotebook->removeElement($fishingNotebook)) {
+        if ($this->fishingNotebooks->removeElement($fishingNotebook)) {
             // set the owning side to null (unless already changed)
             if ($fishingNotebook->getUser() === $this) {
                 $fishingNotebook->setUser(null);

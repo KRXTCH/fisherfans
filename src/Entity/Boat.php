@@ -65,7 +65,6 @@ class Boat
     private ?int $motorizationType = null;
 
     #[ORM\ManyToOne(inversedBy: 'boats')]
-    #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
     public function getId(): ?int

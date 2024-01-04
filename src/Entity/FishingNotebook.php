@@ -42,8 +42,7 @@ class FishingNotebook
     #[ORM\Column]
     private ?bool $isReleased = null;
 
-    #[ORM\ManyToOne(inversedBy: 'fishingNotebook')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(inversedBy: 'fishingNotebooks')]
     private ?User $user = null;
 
     public function __construct()
