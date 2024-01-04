@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -63,6 +65,26 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $rcNumber = null;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Boat::class)]
+    private Collection $boats;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: FishingNotebook::class)]
+    private Collection $fishingNotebook;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Outlet::class)]
+    private Collection $outlets;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Booking::class)]
+    private Collection $bookings;
+
+    public function __construct()
+    {
+        $this->boats = new ArrayCollection();
+        $this->fishingNotebook = new ArrayCollection();
+        $this->outlets = new ArrayCollection();
+        $this->bookings = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -257,6 +279,126 @@ class User
     public function setRcNumber(string $rcNumber): static
     {
         $this->rcNumber = $rcNumber;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Boat>
+     */
+    public function getBoats(): Collection
+    {
+        return $this->boats;
+    }
+
+    public function addBoat(Boat $boat): static
+    {
+        if (!$this->boats->contains($boat)) {
+            $this->boats->add($boat);
+            $boat->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBoat(Boat $boat): static
+    {
+        if ($this->boats->removeElement($boat)) {
+            // set the owning side to null (unless already changed)
+            if ($boat->getUser() === $this) {
+                $boat->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FishingNotebook>
+     */
+    public function getFishingNotebook(): Collection
+    {
+        return $this->fishingNotebook;
+    }
+
+    public function addFishingNotebook(FishingNotebook $fishingNotebook): static
+    {
+        if (!$this->fishingNotebook->contains($fishingNotebook)) {
+            $this->fishingNotebook->add($fishingNotebook);
+            $fishingNotebook->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFishingNotebook(FishingNotebook $fishingNotebook): static
+    {
+        if ($this->fishingNotebook->removeElement($fishingNotebook)) {
+            // set the owning side to null (unless already changed)
+            if ($fishingNotebook->getUser() === $this) {
+                $fishingNotebook->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Outlet>
+     */
+    public function getOutlets(): Collection
+    {
+        return $this->outlets;
+    }
+
+    public function addOutlet(Outlet $outlet): static
+    {
+        if (!$this->outlets->contains($outlet)) {
+            $this->outlets->add($outlet);
+            $outlet->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOutlet(Outlet $outlet): static
+    {
+        if ($this->outlets->removeElement($outlet)) {
+            // set the owning side to null (unless already changed)
+            if ($outlet->getUser() === $this) {
+                $outlet->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Booking>
+     */
+    public function getBookings(): Collection
+    {
+        return $this->bookings;
+    }
+
+    public function addBooking(Booking $booking): static
+    {
+        if (!$this->bookings->contains($booking)) {
+            $this->bookings->add($booking);
+            $booking->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBooking(Booking $booking): static
+    {
+        if ($this->bookings->removeElement($booking)) {
+            // set the owning side to null (unless already changed)
+            if ($booking->getUser() === $this) {
+                $booking->setUser(null);
+            }
+        }
 
         return $this;
     }

@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\FishingNotebookRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -39,6 +41,14 @@ class FishingNotebook
 
     #[ORM\Column]
     private ?bool $isReleased = null;
+
+    #[ORM\ManyToOne(inversedBy: 'fishingNotebook')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
+    public function __construct()
+    {
+    }
 
     public function getId(): ?int
     {
@@ -137,6 +147,18 @@ class FishingNotebook
     public function setIsReleased(bool $isReleased): static
     {
         $this->isReleased = $isReleased;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

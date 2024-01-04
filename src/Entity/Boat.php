@@ -64,6 +64,10 @@ class Boat
     #[ORM\Column]
     private ?int $motorizationType = null;
 
+    #[ORM\ManyToOne(inversedBy: 'boats')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -257,6 +261,18 @@ class Boat
     public function setMotorizationType(int $motorizationType): static
     {
         $this->motorizationType = $motorizationType;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }
