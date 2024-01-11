@@ -2,12 +2,57 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter;
+use App\Controller\BoatController;
 use App\Repository\BoatRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BoatRepository::class)]
+
+#[ApiResource(operations: [
+    new GetCollection(
+        name: 'boats_localize',
+        uriTemplate: '/boats/localize',
+        controller: BoatController::class,
+        openapi: new Operation(
+            summary: 'Locate boats within a bounding box',
+            parameters: [
+                new Parameter(
+                    name: 'latitudeMin',
+                    in: 'query',
+                    description: 'Minimum latitude of the bounding box',
+                    required: true
+                ),
+                new Parameter(
+                    name: 'latitudeMax',
+                    in: 'query',
+                    description: 'Maximum latitude of the bounding box',
+                    required: true
+                ),
+                new Parameter(
+                    name: 'longitudeMin',
+                    in: 'query',
+                    description: 'Minimum longitude of the bounding box',
+                    required: true
+                ),
+                new Parameter(
+                    name: 'longitudeMax',
+                    in: 'query',
+                    description: 'Maximum longitude of the bounding box',
+                    required: true
+                )
+            ]
+        )
+    )
+])]
+
+#[ApiFilter(SearchFilter::class, strategy: 'partial')]
 #[ApiResource]
 class Boat
 {

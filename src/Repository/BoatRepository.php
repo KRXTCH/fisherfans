@@ -13,6 +13,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Boat|null findOneBy(array $criteria, array $orderBy = null)
  * @method Boat[]    findAll()
  * @method Boat[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Boat[]    findByBoundingBox(float $latitudeMin, float $latitudeMax, float $longitudeMin, float $longitudeMax)
  */
 class BoatRepository extends ServiceEntityRepository
 {
@@ -21,28 +22,28 @@ class BoatRepository extends ServiceEntityRepository
         parent::__construct($registry, Boat::class);
     }
 
-//    /**
-//     * @return Boat[] Returns an array of Boat objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('b')
-//            ->andWhere('b.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('b.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Boat
-//    {
-//        return $this->createQueryBuilder('b')
-//            ->andWhere('b.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * Find bateaux within a bounding box defined by latitude and longitude.
+     *
+     * @param float $latitudeMin
+     * @param float $latitudeMax
+     * @param float $longitudeMin
+     * @param float $longitudeMax
+     *
+     * @return Boat[]
+     */
+    public function findByBoundingBox(float $latitudeMin, float $latitudeMax, float $longitudeMin, float $longitudeMax): array
+    {
+        return $this->createQueryBuilder('b')
+            ->andWhere('b.latitude >= :latitudeMin')
+            ->andWhere('b.latitude <= :latitudeMax')
+            ->andWhere('b.longitude >= :longitudeMin')
+            ->andWhere('b.longitude <= :longitudeMax')
+            ->setParameter('latitudeMin', $latitudeMin)
+            ->setParameter('latitudeMax', $latitudeMax)
+            ->setParameter('longitudeMin', $longitudeMin)
+            ->setParameter('longitudeMax', $longitudeMax)
+            ->getQuery()
+            ->getResult();
+    }
 }
