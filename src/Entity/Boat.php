@@ -5,13 +5,19 @@ namespace App\Entity;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
 use App\Controller\BoatController;
 use App\Repository\BoatRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 
 #[ORM\Entity(repositoryClass: BoatRepository::class)]
 
@@ -53,7 +59,14 @@ use Doctrine\ORM\Mapping as ORM;
 ])]
 
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
-#[ApiResource]
+#[ApiResource(operations: [
+    new GetCollection(security: "is_granted('ROLE_USER')"),
+    new Post(security: "is_granted('ROLE_USER')"),
+    new Get(security: "is_granted('ROLE_USER')"),
+    new Put(security: "is_granted('ROLE_USER')"),
+    new Patch(security: "is_granted('ROLE_USER')"),
+    new Delete(security: "is_granted('ROLE_USER')"),
+])]
 class Boat
 {
     #[ORM\Id]

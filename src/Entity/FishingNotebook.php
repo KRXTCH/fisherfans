@@ -8,10 +8,23 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\FishingNotebookRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 
 #[ORM\Entity(repositoryClass: FishingNotebookRepository::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
-#[ApiResource]
+#[ApiResource(operations: [
+    new GetCollection(security: "is_granted('ROLE_USER')"),
+    new Post(security: "is_granted('ROLE_USER')"),
+    new Get(security: "is_granted('ROLE_USER')"),
+    new Put(security: "is_granted('ROLE_USER')"),
+    new Patch(security: "is_granted('ROLE_USER')"),
+    new Delete(security: "is_granted('ROLE_USER')"),
+])]
 class FishingNotebook
 {
     #[ORM\Id]

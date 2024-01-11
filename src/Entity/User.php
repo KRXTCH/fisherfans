@@ -10,76 +10,129 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+use App\State\UserPasswordHasher;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
-#[ApiResource]
-class User
+#[ApiResource(
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Post(processor: UserPasswordHasher::class, validationContext: ['groups' => ['Default', 'user:create']]),
+        new Get(security: "is_granted('ROLE_USER')"),
+        new Put(processor: UserPasswordHasher::class, security: "is_granted('ROLE_USER')"),
+        new Patch(processor: UserPasswordHasher::class, security: "is_granted('ROLE_USER')"),
+        new Delete(security: "is_granted('ROLE_USER')"),
+    ],
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:create', 'user:update']],
+)]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $firstname = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $lastname = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $birthdate = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $mail = null;
+    #[Groups(['user:create'])]
+    private ?string $plainPassword = null;
 
+    #[ORM\Column]
+    private array $roles = [];
+
+    /**
+     * @var string The hashed password
+     */
+    #[ORM\Column]
+    private ?string $password = null;
+
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column]
     private ?string $phone = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $address = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column]
     private ?string $postalCode = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $city = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(type: Types::ARRAY)]
     private array $languages = [];
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $avatarUrl = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $boatLicenseNumber = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $insuranceNumber = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column]
     private ?int $status = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $companyName = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $siretNumber = null;
 
+    #[Groups(['user:create', 'user:read'])]
     #[ORM\Column(length: 255)]
     private ?string $rcNumber = null;
 
+    #[Groups(['user:read'])]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Boat::class)]
     private Collection $boats;
 
+    #[Groups(['user:read'])]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: FishingNotebook::class)]
     private Collection $fishingNotebooks;
 
+    #[Groups(['user:read'])]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Outlet::class)]
     private Collection $outlets;
 
+    #[Groups(['user:read'])]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Booking::class)]
     private Collection $bookings;
+
+    #[Groups(['user:create', 'user:read'])]
+    #[ORM\Column(length: 150, unique: true)]
+    private ?string $email = null;
 
     public function __construct()
     {
@@ -126,18 +179,6 @@ class User
     public function setBirthdate(\DateTimeInterface $birthdate): static
     {
         $this->birthdate = $birthdate;
-
-        return $this;
-    }
-
-    public function getMail(): ?string
-    {
-        return $this->mail;
-    }
-
-    public function setMail(string $mail): static
-    {
-        $this->mail = $mail;
 
         return $this;
     }
@@ -286,6 +327,71 @@ class User
         return $this;
     }
 
+     /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+     /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        $this->plainPassword = null;
+    }
+
+
     /**
      * @return Collection<int, Boat>
      */
@@ -402,6 +508,18 @@ class User
                 $booking->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
 
         return $this;
     }
