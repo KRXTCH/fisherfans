@@ -16,6 +16,10 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 
+use App\Exception\BusinessLogicException;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
 #[ApiResource(operations: [
@@ -26,6 +30,7 @@ use ApiPlatform\Metadata\Delete;
     new Patch(security: "is_granted('ROLE_USER')"),
     new Delete(security: "is_granted('ROLE_USER')"),
 ])]
+#[Assert\Callback(callback: 'validateBooking')]
 class Booking
 {
     #[ORM\Id]
@@ -96,5 +101,31 @@ class Booking
         $this->user = $user;
 
         return $this;
+    }
+
+     /**
+     * @Assert\Callback(callback="validateBooking")
+     */
+    public function validateBooking(ExecutionContextInterface $context): void
+    {
+        // Vérifier la date de réservation
+        if ($this->getDate() <= new \DateTime()) {
+            throw new BusinessLogicException('La date de réservation doit être dans le futur.');
+        }
+
+        // Vérifier le nombre de places réservées
+        if ($this->getBookedPlaces() < 0) {
+            throw new BusinessLogicException('Le nombre de places réservées doit être supérieur ou égale à zéro.');
+        }
+
+        // Vérifier le prix total
+        if ($this->getTotalPrice() < 0) {
+            throw new BusinessLogicException('Le prix total doit être supérieur ou égale à zéro.');
+        }
+
+        // Vérifier si l'utilisateur est manquant
+        if ($this->getUser() === null) {
+            throw new BusinessLogicException('La réservation doit être associée à un utilisateur.');
+        }
     }
 }

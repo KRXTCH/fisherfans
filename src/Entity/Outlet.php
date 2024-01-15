@@ -16,16 +16,14 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 
+use App\Exception\BusinessLogicException;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+
 #[ORM\Entity(repositoryClass: OutletRepository::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
-#[ApiResource(operations: [
-    new GetCollection(security: "is_granted('ROLE_USER')"),
-    new Post(security: "is_granted('ROLE_USER')"),
-    new Get(security: "is_granted('ROLE_USER')"),
-    new Put(security: "is_granted('ROLE_USER')"),
-    new Patch(security: "is_granted('ROLE_USER')"),
-    new Delete(security: "is_granted('ROLE_USER')"),
-])]
+#[ApiResource()]
+#[Assert\Callback(callback: 'validateOutlet')]
 class Outlet
 {
     #[ORM\Id]
@@ -201,5 +199,49 @@ class Outlet
         $this->user = $user;
 
         return $this;
+    }
+
+    /**
+     * @Assert\Callback(callback="validateOutlet")
+     */
+    public function validateOutlet(ExecutionContextInterface $context): void
+    {
+        // Vérifier le titre
+        if (empty($this->getTitle())) {
+            throw new BusinessLogicException('Le titre est obligatoire.');
+        }
+
+        // Vérifier les informations
+        if (empty($this->getInformations())) {
+            throw new BusinessLogicException('Les informations sont obligatoires.');
+        }
+
+        // Vérifier le type
+        if ($this->getType() === null) {
+            throw new BusinessLogicException('Le type est obligatoire.');
+        }
+
+        // Vérifier le montant
+        if ($this->getAmountType() === null) {
+            throw new BusinessLogicException('Le montant est obligatoire.');
+        }
+
+        foreach ($this->startDayDates as $index => $startDate) {
+            $endDate = $this->endDayDates[$index];
+
+            if ($endDate < $startDate) {
+                throw new BusinessLogicException('La date de fin doit être après la date de début.');
+            }
+        }
+
+        // Valider le prix
+        if ($this->getPrice() <= 0) {
+            throw new BusinessLogicException('Le prix doit être supérieur à zéro.');
+        }
+
+        // Vérifier si l'utilisateur est manquant
+        if ($this->getUser() === null) {
+            throw new BusinessLogicException("L'outlet doit être associé à un utilisateur.");
+        }
     }
 }

@@ -14,6 +14,9 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use App\Exception\BusinessLogicException;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: FishingNotebookRepository::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
@@ -25,6 +28,7 @@ use ApiPlatform\Metadata\Delete;
     new Patch(security: "is_granted('ROLE_USER')"),
     new Delete(security: "is_granted('ROLE_USER')"),
 ])]
+#[Assert\Callback(callback: 'validateFishingNotebook')]
 class FishingNotebook
 {
     #[ORM\Id]
@@ -174,5 +178,51 @@ class FishingNotebook
         $this->user = $user;
 
         return $this;
+    }
+
+    /**
+     * @Assert\Callback(callback="validateFishingNotebook")
+     */
+    public function validateFishingNotebook(ExecutionContextInterface $context): void
+    {
+        // Vérifier le nom du poisson
+        if (empty($this->getFishName())) {
+            throw new BusinessLogicException('Le nom du poisson est obligatoire.');
+        }
+
+        // Vérifier l'URL de l'image
+        if (empty($this->getImageUrl())) {
+            throw new BusinessLogicException("L'URL de l'image est obligatoire.");
+        }
+
+        // Vérifier le commentaire
+        if (empty($this->getComment())) {
+            throw new BusinessLogicException('Le commentaire est obligatoire.');
+        }
+
+        // Vérifier la taille
+        if ($this->getSize() <= 0) {
+            throw new BusinessLogicException('La taille doit être supérieure à zéro.');
+        }
+
+        // Vérifier le poids
+        if ($this->getWeight() <= 0) {
+            throw new BusinessLogicException('Le poids doit être supérieur à zéro.');
+        }
+
+        // Vérifier l'emplacement
+        if (empty($this->getLocation())) {
+            throw new BusinessLogicException("L'emplacement est obligatoire.");
+        }
+
+        // Vérifier la date
+        if ($this->getDate() <= new \DateTime()) {
+            throw new BusinessLogicException('La date doit être dans le futur.');
+        }
+
+        // Vérifier si l'utilisateur est manquant
+        if ($this->getUser() === null) {
+            throw new BusinessLogicException('Le carnet de pêche doit être associé à un utilisateur.');
+        }
     }
 }

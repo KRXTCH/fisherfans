@@ -22,6 +22,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use App\Exception\BusinessLogicException;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
@@ -545,10 +546,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function validateBoatLicenseNumber(ExecutionContextInterface $context): void
     {
+        // if ($this->getBoatLicenseNumber() === null) {
+        //     $context->buildViolation("Le numéro de permis bateau est obligatoire.")
+        //         ->atPath('boatLicenseNumber')
+        //         ->addViolation();
+        // }
         if ($this->getBoatLicenseNumber() === null) {
-            $context->buildViolation("Le numéro de permis bateau est obligatoire.")
-                ->atPath('boatLicenseNumber')
-                ->addViolation();
+            // Lance une exception métier si le numéro de permis bateau est manquant
+            throw new BusinessLogicException('Le numéro de permis bateau est obligatoire.');
         }
     }
 }
