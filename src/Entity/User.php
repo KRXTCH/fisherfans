@@ -531,10 +531,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function hasBoat(): bool
     {
-        // Implement your logic here to check if the user has a boat.
-        // For example, if you have a property like $boats, you can check if it's not empty.
-
-        return !$this->boats->isEmpty(); // Assuming you have a $boats property in your User entity.
+        return !$this->boats->isEmpty(); // Assuming you have a $boats property in  User entity.
     }
 
 }
