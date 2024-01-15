@@ -18,6 +18,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BoatRepository::class)]
 
@@ -123,6 +124,7 @@ class Boat
     private ?int $motorizationType = null;
 
     #[ORM\ManyToOne(inversedBy: 'boats')]
+    #[Assert\Callback(callback: 'validateBoatLicenseNumber')]
     private ?User $user = null;
 
     public function getId(): ?int

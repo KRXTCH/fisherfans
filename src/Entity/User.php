@@ -20,6 +20,8 @@ use App\State\UserPasswordHasher;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
@@ -91,7 +93,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $avatarUrl = null;
 
     #[Groups(['user:create', 'user:read'])]
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Regex(
+        pattern: '/^\d{8}$/',
+        message: "Le numéro de permis bateau doit contenir exactement 8 chiffres.",
+    )]
     private ?string $boatLicenseNumber = null;
 
     #[Groups(['user:create', 'user:read'])]
@@ -534,4 +540,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return !$this->boats->isEmpty(); // Assuming you have a $boats property in  User entity.
     }
 
+   /**
+     * @Assert\Callback
+     */
+    public function validateBoatLicenseNumber(ExecutionContextInterface $context): void
+    {
+        if ($this->getBoatLicenseNumber() === null) {
+            $context->buildViolation("Le numéro de permis bateau est obligatoire.")
+                ->atPath('boatLicenseNumber')
+                ->addViolation();
+        }
+    }
 }
