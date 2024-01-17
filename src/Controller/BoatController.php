@@ -18,7 +18,6 @@ class BoatController extends AbstractController {
         $longitudeMin = $req->get('longitudeMin');
         $longitudeMax = $req->get('longitudeMax');
     
-        // Vérifier la validité des paramètres de latitude et de longitude
         if (!is_numeric($latitudeMin) || !is_numeric($latitudeMax) || !is_numeric($longitudeMin) || !is_numeric($longitudeMax)) {
             return new JsonResponse(['error' => 'Paramètres de latitude ou de longitude non valides.'], 400);
         }

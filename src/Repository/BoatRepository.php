@@ -25,25 +25,23 @@ class BoatRepository extends ServiceEntityRepository
     /**
      * Find bateaux within a bounding box defined by latitude and longitude.
      *
-     * @param float $latitudeMin
-     * @param float $latitudeMax
-     * @param float $longitudeMin
-     * @param float $longitudeMax
+     * @param int $latitudeMin
+     * @param int $latitudeMax
+     * @param int $longitudeMin
+     * @param int $longitudeMax
      *
      * @return Boat[]
      */
-    public function findByBoundingBox(float $latitudeMin, float $latitudeMax, float $longitudeMin, float $longitudeMax): array
+    public function findByBoundingBox(int $latitudeMin, int $latitudeMax, int $longitudeMin, int $longitudeMax): array
     {
         try {
             $queryBuilder = $this->createQueryBuilder('b')
-                ->andWhere('b.latitude >= :latitudeMin')
-                ->andWhere('b.latitude <= :latitudeMax')
-                ->andWhere('b.longitude >= :longitudeMin')
-                ->andWhere('b.longitude <= :longitudeMax')
-                ->setParameter('latitudeMin', $latitudeMin)
-                ->setParameter('latitudeMax', $latitudeMax)
-                ->setParameter('longitudeMin', $longitudeMin)
-                ->setParameter('longitudeMax', $longitudeMax);
+            ->andWhere('b.latitude BETWEEN :latitudeMin AND :latitudeMax')
+            ->andWhere('b.longitude BETWEEN :longitudeMin AND :longitudeMax')
+            ->setParameter('latitudeMin', $latitudeMin)
+            ->setParameter('latitudeMax', $latitudeMax)
+            ->setParameter('longitudeMin', $longitudeMin)
+            ->setParameter('longitudeMax', $longitudeMax);
 
             return $queryBuilder->getQuery()->getResult();
         } catch (\Exception $e) {
