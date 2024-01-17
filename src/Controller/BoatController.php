@@ -11,7 +11,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class BoatController extends AbstractController {
 
     #[Route('/boats/localize', name: 'boats_localize', methods: ['GET'])]
-    #[Route('/boats/localize', name: 'boats_localize', methods: ['GET'])]
     public function localizeBoats(BoatRepository $repo, Request $req): JsonResponse {
         $latitudeMin = $req->get('latitudeMin');
         $latitudeMax = $req->get('latitudeMax');
