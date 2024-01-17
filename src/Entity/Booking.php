@@ -30,7 +30,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     new Patch(security: "is_granted('ROLE_USER')"),
     new Delete(security: "is_granted('ROLE_USER')"),
 ])]
-#[Assert\Callback(callback: 'validateBooking')]
+
 class Booking
 {
     #[ORM\Id]
@@ -103,9 +103,7 @@ class Booking
         return $this;
     }
 
-     /**
-     * @Assert\Callback(callback="validateBooking")
-     */
+    #[Assert\Callback]
     public function validateBooking(ExecutionContextInterface $context): void
     {
         // Vérifier la date de réservation

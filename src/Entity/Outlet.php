@@ -22,8 +22,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OutletRepository::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'partial')]
-#[ApiResource()]
-#[Assert\Callback(callback: 'validateOutlet')]
+#[ApiResource(operations: [
+    new GetCollection(security: "is_granted('ROLE_USER')"),
+    new Post(security: "is_granted('ROLE_USER')"),
+    new Get(security: "is_granted('ROLE_USER')"),
+    new Put(security: "is_granted('ROLE_USER')"),
+    new Patch(security: "is_granted('ROLE_USER')"),
+    new Delete(security: "is_granted('ROLE_USER')"),
+])]
+
 class Outlet
 {
     #[ORM\Id]
@@ -201,10 +208,9 @@ class Outlet
         return $this;
     }
 
-    /**
-     * @Assert\Callback(callback="validateOutlet")
-     */
-    public function validateOutlet(ExecutionContextInterface $context): void
+    
+    #[Assert\Callback]
+    public function validation(ExecutionContextInterface $context): void
     {
         // Vérifier le titre
         if (empty($this->getTitle())) {
@@ -242,6 +248,14 @@ class Outlet
         // Vérifier si l'utilisateur est manquant
         if ($this->getUser() === null) {
             throw new BusinessLogicException("L'outlet doit être associé à un utilisateur.");
+        }
+
+        $boats = $this->getUser()->getBoats();
+
+        if (count($boats) < 1) {
+            $context->buildViolation('Cet utilisateur ne possède aucun bateau.')
+                ->atPath('user.boats')
+                ->addViolation();
         }
     }
 }

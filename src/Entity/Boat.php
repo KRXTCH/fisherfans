@@ -19,6 +19,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: BoatRepository::class)]
 
@@ -124,7 +125,6 @@ class Boat
     private ?int $motorizationType = null;
 
     #[ORM\ManyToOne(inversedBy: 'boats')]
-    #[Assert\Callback(callback: 'validateBoatLicenseNumber')]
     private ?User $user = null;
 
     public function getId(): ?int
@@ -334,5 +334,17 @@ class Boat
         $this->user = $user;
 
         return $this;
+    }
+
+    #[Assert\Callback]
+    public function validate(ExecutionContextInterface $context)
+    {
+        $licenseNumber = $this->getUser()->getBoatLicenseNumber();
+
+        if (empty($licenseNumber)) {
+            $context->buildViolation('Le numéro de licence de bateau ne peut pas être vide.')
+                ->atPath('user.boatLicenseNumber')
+                ->addViolation();
+        }
     }
 }
