@@ -34,16 +34,20 @@ class BoatRepository extends ServiceEntityRepository
      */
     public function findByBoundingBox(float $latitudeMin, float $latitudeMax, float $longitudeMin, float $longitudeMax): array
     {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.latitude >= :latitudeMin')
-            ->andWhere('b.latitude <= :latitudeMax')
-            ->andWhere('b.longitude >= :longitudeMin')
-            ->andWhere('b.longitude <= :longitudeMax')
-            ->setParameter('latitudeMin', $latitudeMin)
-            ->setParameter('latitudeMax', $latitudeMax)
-            ->setParameter('longitudeMin', $longitudeMin)
-            ->setParameter('longitudeMax', $longitudeMax)
-            ->getQuery()
-            ->getResult();
+        try {
+            $queryBuilder = $this->createQueryBuilder('b')
+                ->andWhere('b.latitude >= :latitudeMin')
+                ->andWhere('b.latitude <= :latitudeMax')
+                ->andWhere('b.longitude >= :longitudeMin')
+                ->andWhere('b.longitude <= :longitudeMax')
+                ->setParameter('latitudeMin', $latitudeMin)
+                ->setParameter('latitudeMax', $latitudeMax)
+                ->setParameter('longitudeMin', $longitudeMin)
+                ->setParameter('longitudeMax', $longitudeMax);
+
+            return $queryBuilder->getQuery()->getResult();
+        } catch (\Exception $e) {
+            throw new \Exception('Error fetching boats from the database: ' . $e->getMessage());
+        }
     }
 }
